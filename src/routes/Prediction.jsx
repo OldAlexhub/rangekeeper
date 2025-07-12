@@ -59,6 +59,21 @@ const Prediction = () => {
 
   const formatDate = (dateStr) => new Date(dateStr).toISOString().split("T")[0];
 
+  const todayISO = new Date().toISOString().split("T")[0];
+
+  const filterFutureData = (data) =>
+    data.filter((entry) => formatDate(entry.date) >= todayISO);
+
+  const filterLast7Days = (data) => {
+    const today = new Date();
+    const sevenDaysAgo = new Date(today);
+    sevenDaysAgo.setDate(today.getDate() - 7);
+    return data.filter((entry) => {
+      const entryDate = new Date(entry.date);
+      return entryDate >= sevenDaysAgo && entryDate <= today;
+    });
+  };
+
   const generateChartData = (dataSlice, color = "#4bc0c0") => ({
     labels: dataSlice.map((entry) => formatDate(entry.date)),
     datasets: [
@@ -137,16 +152,18 @@ const Prediction = () => {
       </div>
 
       <div className="row">
+        {/* Overall - Future Only */}
         <div className="col-12 mb-4">
           <div
             className="card shadow p-4"
             ref={(el) => (chartRefs.current.overallChart = el)}
           >
             <h5 className="mb-3">Overall Predicted Range</h5>
-            <Line data={generateChartData(predictionData)} />
+            <Line data={generateChartData(filterFutureData(predictionData))} />
           </div>
         </div>
 
+        {/* Recent - Past 7 Days Only */}
         <div className="col-md-6 mb-4">
           <div
             className="card shadow p-4"
@@ -154,11 +171,15 @@ const Prediction = () => {
           >
             <h6 className="mb-3">Recent 7 Days Forecast</h6>
             <Line
-              data={generateChartData(predictionData.slice(0, 7), "#ff6384")}
+              data={generateChartData(
+                filterLast7Days(predictionData),
+                "#ff6384"
+              )}
             />
           </div>
         </div>
 
+        {/* Snapshot - Upcoming 7 Future Points */}
         <div className="col-md-6 mb-4">
           <div
             className="card shadow p-4"
@@ -166,7 +187,10 @@ const Prediction = () => {
           >
             <h6 className="mb-3">Upcoming Forecast Snapshot</h6>
             <Line
-              data={generateChartData(predictionData.slice(-7), "#36a2eb")}
+              data={generateChartData(
+                filterFutureData(predictionData).slice(0, 7),
+                "#36a2eb"
+              )}
             />
           </div>
         </div>

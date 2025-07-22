@@ -79,10 +79,12 @@ const Dashboard = () => {
       grouped[groupKey].push(entry[key]);
     }
 
-    return Object.entries(grouped).map(([label, values]) => ({
-      label,
-      value: values.reduce((a, b) => a + b, 0) / values.length,
-    }));
+    return Object.entries(grouped)
+      .sort(([a], [b]) => new Date(a) - new Date(b))
+      .map(([label, values]) => ({
+        label,
+        value: values.reduce((a, b) => a + b, 0) / values.length,
+      }));
   };
 
   const metrics = [
